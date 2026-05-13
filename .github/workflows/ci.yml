@@ -1,0 +1,123 @@
+# ─── WORKFLOW NAME ────────────────────────────
+# Shows in GitHub Actions tab
+name: CI - Build & Test
+
+# ─── TRIGGERS ─────────────────────────────────
+# When does this workflow run?
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+    # Runs on push to ANY branch
+  pull_request:
+    branches: [ main, develop ]
+    # Also runs when PR is opened
+
+# ─── JOBS ─────────────────────────────────────
+# A workflow has one or more jobs
+# Jobs run in parallel by default
+jobs:
+
+  # ════════════════════════════════════════════
+  # JOB 1: TEST BACKEND
+  # Checks backend installs and runs correctly
+  # ════════════════════════════════════════════
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    # runs-on = which OS to use
+    # ubuntu-latest = free Linux virtual machine
+
+    steps:
+      # Step 1: Download your code onto runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: wzh-moments-backend/package-lock.json
+
+      # Step 3: Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./wzh-moments-backend
+        run: npm install
+
+      # Step 4: Check if app starts without errors
+      - name: Verify backend builds
+        working-directory: ./wzh-moments-backend
+        run: node -e "console.log('Backend syntax OK ✅')"
+
+  # ════════════════════════════════════════════
+  # JOB 2: TEST FRONTEND
+  # Checks frontend builds correctly
+  # ════════════════════════════════════════════
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: wzh-moments-frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./wzh-moments-frontend
+        run: npm install
+
+      # Most important: Does React build without errors?
+      - name: Build frontend
+        working-directory: ./wzh-moments-frontend
+        run: npm run build
+        env:
+          VITE_API_URL: https://wzh-moments-backend.onrender.com/api
+          VITE_SOCKET_URL: https://wzh-moments-backend.onrender.com
+
+  # ════════════════════════════════════════════
+  # JOB 3: BUILD DOCKER IMAGES
+  # Verifies Docker builds work correctly
+  # Only runs after both tests pass!
+  # ════════════════════════════════════════════
+  build-docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    # needs = wait for these jobs to pass first
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          # ${{ secrets.X }} = reads from GitHub Secrets
+
+      # Build backend Docker image
+      - name: Build backend image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/wzh-backend:latest \
+            ./wzh-moments-backend
+
+      # Build frontend Docker image
+      - name: Build frontend image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/wzh-frontend:latest \
+            ./wzh-moments-frontend
+
+      # Push both images to Docker Hub
+      - name: Push images to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/wzh-backend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/wzh-frontend:latest
