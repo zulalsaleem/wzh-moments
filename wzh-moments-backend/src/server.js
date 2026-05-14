@@ -17,6 +17,7 @@ import adminRoutes from './routes/admin.js';
 import userRequestRoutes from './routes/userRequests.js';
 import notificationRoutes from './routes/notifications.js';
 import uploadRoutes from './routes/upload.js';
+import reviewRoutes from './routes/reviews.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // ─── Uncaught exception guard ────────────────────────────────────────────────
@@ -91,6 +92,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/user-requests', userRequestRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // ─── 404 handler ──────────────────────────────────────────────────────────────
 app.use((_req, res) => {

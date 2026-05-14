@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Calendar, Ticket, DollarSign, Clock, MapPin, X,
-  ShoppingBag, Plus,
+  ShoppingBag, Plus, Star,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
@@ -16,6 +16,7 @@ import RequestCard from '../components/features/requests/RequestCard';
 import CreateRequestModal from '../components/features/requests/CreateRequestModal';
 import ViewProposalsModal from '../components/features/requests/ViewProposalsModal';
 import AvatarUpload from '../components/common/AvatarUpload';
+import SubmitReviewModal from '../components/features/reviews/SubmitReviewModal';
 import { formatDate, formatCurrency, getStatusColor } from '../utils/helpers';
 
 const MENU = [
@@ -35,6 +36,7 @@ export default function UserDashboard() {
   const [cancellingId, setCancellingId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [reviewTarget, setReviewTarget] = useState(null);
 
   const fetchBookings = useCallback(async () => {
     setLoadingBookings(true);
@@ -264,13 +266,26 @@ export default function UserDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {requests.map((request) => (
-                <RequestCard
-                  key={request._id}
-                  request={request}
-                  onViewProposals={setSelectedRequest}
-                  onCancel={handleCancelRequest}
-                  onComplete={handleCompleteRequest}
-                />
+                <div key={request._id}>
+                  <RequestCard
+                    request={request}
+                    onViewProposals={setSelectedRequest}
+                    onCancel={handleCancelRequest}
+                    onComplete={handleCompleteRequest}
+                  />
+                  {request.assignedVendor && (
+                    <button
+                      onClick={() => setReviewTarget({
+                        vendor: request.assignedVendor,
+                        requestId: request._id,
+                      })}
+                      className="flex items-center justify-center gap-1 w-full mt-2 text-xs text-yellow-600 font-medium hover:text-yellow-700 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-200 transition-colors"
+                    >
+                      <Star className="h-3 w-3" />
+                      Rate Vendor
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -289,6 +304,17 @@ export default function UserDashboard() {
           request={selectedRequest}
           onClose={() => setSelectedRequest(null)}
           onUpdate={fetchRequests}
+        />
+      )}
+      {reviewTarget && (
+        <SubmitReviewModal
+          vendor={reviewTarget.vendor}
+          requestId={reviewTarget.requestId}
+          onClose={() => setReviewTarget(null)}
+          onSuccess={() => {
+            setReviewTarget(null);
+            toast.success('Review submitted!');
+          }}
         />
       )}
     </DashboardLayout>

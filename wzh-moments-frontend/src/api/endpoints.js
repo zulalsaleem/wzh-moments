@@ -67,6 +67,15 @@ const endpoints = {
     portfolio: '/upload/portfolio',
     deleteImage: (publicId) => `/upload/image/${encodeURIComponent(publicId)}`,
   },
+
+  reviews: {
+    submit: '/reviews',
+    vendor: (vendorId) => `/reviews/vendor/${vendorId}`,
+    canReview: (vendorId) => `/reviews/can-review/${vendorId}`,
+    myReviews: '/reviews/my-reviews',
+    respond: (id) => `/reviews/${id}/respond`,
+    delete: (id) => `/reviews/${id}`,
+  },
 };
 
 export default endpoints;

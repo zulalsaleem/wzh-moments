@@ -33,6 +33,7 @@ const notificationSchema = new mongoose.Schema(
           'proposal_received',
           'proposal_accepted',
           'proposal_rejected',
+          'review_received',
         ],
         message: 'Invalid notification type',
       },
@@ -59,8 +60,8 @@ const notificationSchema = new mongoose.Schema(
     relatedModel: {
       type: String,
       enum: {
-        values: ['Event', 'Booking', 'Bid', 'User', 'VendorProposal'],
-        message: 'relatedModel must be Event, Booking, Bid, User, or VendorProposal',
+        values: ['Event', 'Booking', 'Bid', 'User', 'VendorProposal', 'Review'],
+        message: 'relatedModel must be Event, Booking, Bid, User, VendorProposal, or Review',
       },
     },
 

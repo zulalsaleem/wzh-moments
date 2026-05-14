@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import endpoints from '../api/endpoints';
 import { REQUEST_CATEGORIES } from '../utils/constants';
+import StarRating from '../components/features/reviews/StarRating';
 import toast from 'react-hot-toast';
 
 export default function MarketplacePage() {
@@ -140,11 +141,26 @@ export default function MarketplacePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {requests.map((request) => (
-                <RequestCard
-                  key={request._id}
-                  request={request}
-                  onSubmitProposal={isVendor && isVerified ? setSelectedRequest : undefined}
-                />
+                <div key={request._id}>
+                  <RequestCard
+                    request={request}
+                    onSubmitProposal={isVendor && isVerified ? setSelectedRequest : undefined}
+                  />
+                  {request.assignedVendor && (
+                    <div className="flex items-center gap-2 mt-2 px-1">
+                      <StarRating
+                        rating={request.assignedVendor.averageRating || 0}
+                        size="sm"
+                        showNumber={true}
+                      />
+                      {request.assignedVendor.totalReviews > 0 && (
+                        <span className="text-xs text-gray-400">
+                          ({request.assignedVendor.totalReviews})
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
 
