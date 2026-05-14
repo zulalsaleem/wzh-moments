@@ -212,6 +212,17 @@ export default function EventDetailPage() {
             {/* ── Main column ── */}
             <div className="lg:col-span-2 space-y-6">
 
+              {/* Cover image */}
+              {event.coverImage && (
+                <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-sm">
+                  <img
+                    src={event.coverImage}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
               {/* Event details */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Event Details</h2>

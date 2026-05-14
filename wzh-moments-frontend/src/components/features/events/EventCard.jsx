@@ -15,16 +15,18 @@ export default function EventCard({ event }) {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 group overflow-hidden flex flex-col">
       {/* Image / banner */}
       <div className="relative h-44 bg-gradient-to-br from-primary-400 to-secondary-400 overflow-hidden">
-        {event.imageUrl ? (
+        {(event.coverImage || event.imageUrl) ? (
           <img
-            src={event.imageUrl}
+            src={event.coverImage || event.imageUrl}
             alt={event.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <Calendar className="w-16 h-16 text-white/40" />
+          <div className="flex items-center justify-center h-full px-4">
+            <span className="text-white font-bold text-lg text-center line-clamp-2">
+              {event.title}
+            </span>
           </div>
         )}
 

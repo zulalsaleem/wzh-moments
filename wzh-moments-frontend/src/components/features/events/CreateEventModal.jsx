@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../../api/axios';
 import endpoints from '../../../api/endpoints';
 import Modal from '../../common/Modal';
 import Button from '../../common/Button';
 import Input from '../../common/Input';
+import ImageUpload from '../../common/ImageUpload';
 import { EVENT_CATEGORIES } from '../../../utils/constants';
 
 export default function CreateEventModal({ isOpen, onClose, onCreated }) {
   const [timelineTasks, setTimelineTasks] = useState([{ task: '', description: '' }]);
   const [vendorReqs, setVendorReqs] = useState([]);
+  const [createdEventId, setCreatedEventId] = useState(null);
+  const [coverImage, setCoverImage] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
     defaultValues: { ticketPrice: 0 },
@@ -30,6 +33,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreated }) {
     reset();
     setTimelineTasks([{ task: '', description: '' }]);
     setVendorReqs([]);
+    setCreatedEventId(null);
+    setCoverImage(null);
     onClose();
   };
 
@@ -41,7 +46,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreated }) {
     }
 
     try {
-      await api.post(endpoints.events.create, {
+      const res = await api.post(endpoints.events.create, {
         title: data.title,
         description: data.description,
         date: data.date,
@@ -55,13 +60,46 @@ export default function CreateEventModal({ isOpen, onClose, onCreated }) {
           ? data.tags.split(',').map((t) => t.trim()).filter(Boolean)
           : [],
       });
-      toast.success('Event created! Pending admin approval.');
-      handleClose();
+      const eventId = res.data.event?._id ?? res.data.event?.id;
+      toast.success('Event created! Add a cover photo or click Done.');
+      setCreatedEventId(eventId);
       onCreated?.();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create event');
     }
   };
+
+  // Cover photo step — shown after event is successfully created
+  if (createdEventId) {
+    return (
+      <Modal isOpen={isOpen} onClose={handleClose} title="Add Cover Photo" size="lg">
+        <div className="space-y-5">
+          <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+            <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
+            <p className="text-sm text-green-800 font-medium">
+              Event created successfully! Optionally add a cover photo below.
+            </p>
+          </div>
+
+          <ImageUpload
+            currentImage={coverImage}
+            uploadEndpoint={endpoints.upload.eventCover(createdEventId)}
+            fieldName="coverImage"
+            aspectRatio="video"
+            label="Event Cover Photo"
+            hint="Recommended: 1200×600px — JPG, PNG, WebP up to 5MB"
+            onUploadSuccess={(data) => setCoverImage(data.coverImage)}
+          />
+
+          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+            <Button type="button" onClick={handleClose}>
+              Done
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Create New Event" size="lg">

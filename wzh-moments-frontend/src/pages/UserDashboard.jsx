@@ -15,6 +15,7 @@ import Button from '../components/common/Button';
 import RequestCard from '../components/features/requests/RequestCard';
 import CreateRequestModal from '../components/features/requests/CreateRequestModal';
 import ViewProposalsModal from '../components/features/requests/ViewProposalsModal';
+import AvatarUpload from '../components/common/AvatarUpload';
 import { formatDate, formatCurrency, getStatusColor } from '../utils/helpers';
 
 const MENU = [
@@ -25,7 +26,7 @@ const MENU = [
 const TABS = ['My Bookings', 'My Requests'];
 
 export default function UserDashboard() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [tab, setTab]               = useState('My Bookings');
   const [bookings, setBookings]     = useState([]);
   const [requests, setRequests]     = useState([]);
@@ -109,9 +110,21 @@ export default function UserDashboard() {
 
   return (
     <DashboardLayout title="My Dashboard" menuItems={MENU}>
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Welcome back, {user?.name?.split(' ')[0]} 👋</h2>
-        <p className="text-sm text-gray-500 mt-0.5">Here's an overview of your activity.</p>
+      {/* Profile section */}
+      <div className="flex items-center gap-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+        <AvatarUpload
+          currentImage={user?.profileImage}
+          name={user?.name ?? 'User'}
+          size="lg"
+          onUploadSuccess={(data) => updateUser({ profileImage: data.profileImage })}
+        />
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold text-gray-900 truncate">
+            Welcome back, {user?.name?.split(' ')[0]}
+          </h2>
+          <p className="text-sm text-gray-500 mt-0.5 truncate">{user?.email}</p>
+          <p className="text-xs text-gray-400 mt-1">Click the camera icon to update your profile photo</p>
+        </div>
       </div>
 
       {/* Stats */}

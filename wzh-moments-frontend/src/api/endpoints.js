@@ -60,6 +60,13 @@ const endpoints = {
     markRead: (id) => `/notifications/${id}/read`,
     markAllRead: '/notifications/read-all',
   },
+
+  upload: {
+    eventCover: (eventId) => `/upload/event/${eventId}/cover`,
+    profile: '/upload/profile',
+    portfolio: '/upload/portfolio',
+    deleteImage: (publicId) => `/upload/image/${encodeURIComponent(publicId)}`,
+  },
 };
 
 export default endpoints;

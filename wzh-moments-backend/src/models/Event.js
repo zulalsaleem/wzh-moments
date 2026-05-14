@@ -162,6 +162,16 @@ const eventSchema = new mongoose.Schema(
       default: [],
     },
 
+    coverImage: {
+      type: String,
+      default: null,
+    },
+
+    coverImagePublicId: {
+      type: String,
+      default: null,
+    },
+
     imageUrl: {
       type: String,
     },

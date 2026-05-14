@@ -89,6 +89,12 @@ export function AuthProvider({ children }) {
     navigate('/login');
   };
 
+  const updateUser = (updates) => {
+    const updated = { ...user, ...updates };
+    setUser(updated);
+    localStorage.setItem('user', JSON.stringify(updated));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -97,6 +103,7 @@ export function AuthProvider({ children }) {
         register,
         login,
         logout,
+        updateUser,
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin',
         isOrganizer: user?.role === 'organizer',

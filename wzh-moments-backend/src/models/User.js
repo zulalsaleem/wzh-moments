@@ -70,7 +70,20 @@ const userSchema = new mongoose.Schema(
 
     profileImage: {
       type: String,
+      default: null,
     },
+
+    profileImagePublicId: {
+      type: String,
+      default: null,
+    },
+
+    portfolioImages: [
+      {
+        url: String,
+        publicId: String,
+      },
+    ],
 
     bio: {
       type: String,
