@@ -62,7 +62,13 @@ app.use('/api/', generalLimiter);
 app.use(
   cors({
     //origin: process.env.FRONTEND_URL.split,
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://wzhmoments.online',
+  'https://www.wzhmoments.online',
+  process.env.FRONTEND_URL,
+] ,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
