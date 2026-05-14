@@ -26,19 +26,19 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       # Build with version tag (commit SHA)
       # This creates unique tag for each deployment
       # Example: wzh-backend:a1b2c3d4
       - name: Build and push backend image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/wzh-backend:latest \
-            -t ${{ secrets.DOCKER_USERNAME }}/wzh-backend:${{ github.sha }} \
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/wzh-backend:latest \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/wzh-backend:${{ github.sha }} \
             ./wzh-moments-backend
-          docker push ${{ secrets.DOCKER_USERNAME }}/wzh-backend:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/wzh-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/wzh-backend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/wzh-backend:${{ github.sha }}
 
       # Tell Render to deploy new version
       # Render pulls latest code and redeploys
@@ -71,19 +71,19 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build and push frontend image
         run: |
           docker build \
             --build-arg VITE_API_URL=https://wzh-moments-backend.onrender.com/api \
             --build-arg VITE_SOCKET_URL=https://wzh-moments-backend.onrender.com \
-            -t ${{ secrets.DOCKER_USERNAME }}/wzh-frontend:latest \
-            -t ${{ secrets.DOCKER_USERNAME }}/wzh-frontend:${{ github.sha }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/wzh-frontend:latest \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/wzh-frontend:${{ github.sha }} \
             ./wzh-moments-frontend
-          docker push ${{ secrets.DOCKER_USERNAME }}/wzh-frontend:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/wzh-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/wzh-frontend:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/wzh-frontend:${{ github.sha }}
 
       - name: Frontend image updated
         run: echo "Frontend Docker image updated on Docker Hub ✅"
