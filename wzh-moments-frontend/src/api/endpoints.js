@@ -76,6 +76,14 @@ const endpoints = {
     respond: (id) => `/reviews/${id}/respond`,
     delete: (id) => `/reviews/${id}`,
   },
+
+  chat: {
+    myRooms: '/chat/my-rooms',
+    unreadCount: '/chat/unread-count',
+    room: (eventId) => `/chat/room/${eventId}`,
+    messages: (eventId) => `/chat/${eventId}/messages`,
+    send: (eventId) => `/chat/${eventId}/messages`,
+  },
 };
 
 export default endpoints;
