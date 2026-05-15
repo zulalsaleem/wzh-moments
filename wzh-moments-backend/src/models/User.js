@@ -70,11 +70,36 @@ const userSchema = new mongoose.Schema(
 
     profileImage: {
       type: String,
+      default: null,
     },
+
+    profileImagePublicId: {
+      type: String,
+      default: null,
+    },
+
+    portfolioImages: [
+      {
+        url: String,
+        publicId: String,
+      },
+    ],
 
     bio: {
       type: String,
       maxlength: [500, 'Bio cannot exceed 500 characters'],
+    },
+
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0,
     },
   },
   {

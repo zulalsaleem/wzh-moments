@@ -118,6 +118,33 @@ export const initSocket = (httpServer) => {
       console.log(`👋 ${socket.user.name} left event room: ${eventId}`);
     });
 
+    // ── join-chat ───────────────────────────────────────────────────────────
+    socket.on('join-chat', ({ eventId } = {}) => {
+      if (!eventId || !/^[a-f\d]{24}$/i.test(eventId)) {
+        socket.emit('error', { message: 'Invalid event ID' });
+        return;
+      }
+      socket.join(`chat-${eventId}`);
+      console.log(`💬 ${socket.user.name} joined chat-${eventId}`);
+    });
+
+    // ── leave-chat ──────────────────────────────────────────────────────────
+    socket.on('leave-chat', ({ eventId } = {}) => {
+      if (!eventId) return;
+      socket.leave(`chat-${eventId}`);
+      console.log(`💬 ${socket.user.name} left chat-${eventId}`);
+    });
+
+    // ── chat:typing ─────────────────────────────────────────────────────────
+    socket.on('chat:typing', ({ eventId, isTyping } = {}) => {
+      if (!eventId || !/^[a-f\d]{24}$/i.test(eventId)) return;
+      socket.to(`chat-${eventId}`).emit('chat:typing', {
+        userId: socket.user.id,
+        userName: socket.user.name,
+        isTyping: Boolean(isTyping),
+      });
+    });
+
     // ── disconnect ──────────────────────────────────────────────────────────
     socket.on('disconnect', () => {
       console.log(`❌ Socket disconnected: ${socket.user.name}`);

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Calendar, Ticket, DollarSign, Clock, MapPin, X,
-  ShoppingBag, Plus,
+  ShoppingBag, Plus, Star,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
@@ -15,6 +15,8 @@ import Button from '../components/common/Button';
 import RequestCard from '../components/features/requests/RequestCard';
 import CreateRequestModal from '../components/features/requests/CreateRequestModal';
 import ViewProposalsModal from '../components/features/requests/ViewProposalsModal';
+import AvatarUpload from '../components/common/AvatarUpload';
+import SubmitReviewModal from '../components/features/reviews/SubmitReviewModal';
 import { formatDate, formatCurrency, getStatusColor } from '../utils/helpers';
 
 const MENU = [
@@ -25,7 +27,7 @@ const MENU = [
 const TABS = ['My Bookings', 'My Requests'];
 
 export default function UserDashboard() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [tab, setTab]               = useState('My Bookings');
   const [bookings, setBookings]     = useState([]);
   const [requests, setRequests]     = useState([]);
@@ -34,6 +36,7 @@ export default function UserDashboard() {
   const [cancellingId, setCancellingId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [reviewTarget, setReviewTarget] = useState(null);
 
   const fetchBookings = useCallback(async () => {
     setLoadingBookings(true);
@@ -109,9 +112,21 @@ export default function UserDashboard() {
 
   return (
     <DashboardLayout title="My Dashboard" menuItems={MENU}>
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Welcome back, {user?.name?.split(' ')[0]} 👋</h2>
-        <p className="text-sm text-gray-500 mt-0.5">Here's an overview of your activity.</p>
+      {/* Profile section */}
+      <div className="flex items-center gap-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+        <AvatarUpload
+          currentImage={user?.profileImage}
+          name={user?.name ?? 'User'}
+          size="lg"
+          onUploadSuccess={(data) => updateUser({ profileImage: data.profileImage })}
+        />
+        <div className="min-w-0">
+          <h2 className="text-xl font-bold text-gray-900 truncate">
+            Welcome back, {user?.name?.split(' ')[0]}
+          </h2>
+          <p className="text-sm text-gray-500 mt-0.5 truncate">{user?.email}</p>
+          <p className="text-xs text-gray-400 mt-1">Click the camera icon to update your profile photo</p>
+        </div>
       </div>
 
       {/* Stats */}
@@ -251,13 +266,26 @@ export default function UserDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {requests.map((request) => (
-                <RequestCard
-                  key={request._id}
-                  request={request}
-                  onViewProposals={setSelectedRequest}
-                  onCancel={handleCancelRequest}
-                  onComplete={handleCompleteRequest}
-                />
+                <div key={request._id}>
+                  <RequestCard
+                    request={request}
+                    onViewProposals={setSelectedRequest}
+                    onCancel={handleCancelRequest}
+                    onComplete={handleCompleteRequest}
+                  />
+                  {request.assignedVendor && (
+                    <button
+                      onClick={() => setReviewTarget({
+                        vendor: request.assignedVendor,
+                        requestId: request._id,
+                      })}
+                      className="flex items-center justify-center gap-1 w-full mt-2 text-xs text-yellow-600 font-medium hover:text-yellow-700 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-200 transition-colors"
+                    >
+                      <Star className="h-3 w-3" />
+                      Rate Vendor
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -276,6 +304,17 @@ export default function UserDashboard() {
           request={selectedRequest}
           onClose={() => setSelectedRequest(null)}
           onUpdate={fetchRequests}
+        />
+      )}
+      {reviewTarget && (
+        <SubmitReviewModal
+          vendor={reviewTarget.vendor}
+          requestId={reviewTarget.requestId}
+          onClose={() => setReviewTarget(null)}
+          onSuccess={() => {
+            setReviewTarget(null);
+            toast.success('Review submitted!');
+          }}
         />
       )}
     </DashboardLayout>

@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+
+  # Backend container - Node.js API
+  backend:
+    build:
+      context: ./wzh-moments-backend
+      dockerfile: Dockerfile
+    container_name: wzh-backend
+    ports:
+      - "8000:8000"     # localhost:8000 → container:8000
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRE=7d
+      - FRONTEND_URL=http://localhost:3000
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_PORT=587
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - wzh-network
+
+  # Frontend container - React served by Nginx
+  frontend:
+    build:
+      context: ./wzh-moments-frontend
+      dockerfile: Dockerfile
+    container_name: wzh-frontend
+    ports:
+      - "3000:80"       # localhost:3000 → container:80
+    depends_on:
+      backend:
+        condition: service_healthy   # Wait for backend first!
+    restart: unless-stopped
+    networks:
+      - wzh-network
+
+networks:
+  wzh-network:
+    driver: bridge    # Containers can talk to each other

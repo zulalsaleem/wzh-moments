@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Calendar, MapPin, Users, ArrowLeft,
   User as UserIcon, Wifi, WifiOff, Tag, Ticket,
-  Check, RefreshCw, Gavel, BarChart2,
+  Check, RefreshCw, Gavel, BarChart2, MessageCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
@@ -19,6 +19,7 @@ import ProgressCircle from '../components/features/events/ProgressCircle';
 import BidSubmissionModal from '../components/features/events/BidSubmissionModal';
 import EventBidsModal from '../components/features/events/EventBidsModal';
 import PaymentModal from '../components/features/events/PaymentModal';
+import ChatWindow from '../components/features/chat/ChatWindow';
 import { formatDate, formatCurrency, getStatusColor, calculateCompletion } from '../utils/helpers';
 
 // Compare MongoDB _id values safely (could be string or ObjectId)
@@ -43,6 +44,7 @@ export default function EventDetailPage() {
   const [showBidModal, setShowBidModal] = useState(false);
   const [showBidsModal, setShowBidsModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [tickets, setTickets] = useState(1);
 
   // Apply realtime progress updates
@@ -211,6 +213,17 @@ export default function EventDetailPage() {
 
             {/* ── Main column ── */}
             <div className="lg:col-span-2 space-y-6">
+
+              {/* Cover image */}
+              {event.coverImage && (
+                <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-sm">
+                  <img
+                    src={event.coverImage}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
 
               {/* Event details */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -518,6 +531,17 @@ export default function EventDetailPage() {
                     <Link to="/login" className="text-primary-600 hover:underline">Sign in</Link> to book your spot
                   </p>
                 )}
+
+                {/* Chat button — authenticated non-organizers only */}
+                {isAuthenticated && !isEventOrganizer() && (
+                  <button
+                    onClick={() => setShowChat(true)}
+                    className="w-full flex items-center justify-center gap-2 py-3 mt-3 border-2 border-primary-500 text-primary-600 font-semibold rounded-2xl hover:bg-primary-50 transition-colors"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    Chat with Organizer
+                  </button>
+                )}
               </div>
 
               {/* Vendor bid card */}
@@ -688,6 +712,18 @@ export default function EventDetailPage() {
             refetch();
           }}
         />
+      )}
+
+      {/* Floating chat window */}
+      {showChat && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <ChatWindow
+            eventId={event._id}
+            eventTitle={event.title}
+            organizer={event.organizer ?? event.organizerId}
+            onClose={() => setShowChat(false)}
+          />
+        </div>
       )}
 
     </PublicLayout>

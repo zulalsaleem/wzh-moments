@@ -16,6 +16,9 @@ import paymentRoutes from './routes/payments.js';
 import adminRoutes from './routes/admin.js';
 import userRequestRoutes from './routes/userRequests.js';
 import notificationRoutes from './routes/notifications.js';
+import uploadRoutes from './routes/upload.js';
+import reviewRoutes from './routes/reviews.js';
+import chatRoutes from './routes/chat.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // ─── Uncaught exception guard ────────────────────────────────────────────────
@@ -60,7 +63,13 @@ app.use('/api/', generalLimiter);
 app.use(
   cors({
     //origin: process.env.FRONTEND_URL.split,
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://wzhmoments.online',
+  'https://www.wzhmoments.online',
+  process.env.FRONTEND_URL,
+] ,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -89,6 +98,9 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user-requests', userRequestRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/chat', chatRoutes);
 
 // ─── 404 handler ──────────────────────────────────────────────────────────────
 app.use((_req, res) => {

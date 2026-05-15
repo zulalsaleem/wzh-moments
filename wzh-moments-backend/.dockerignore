@@ -1,0 +1,7 @@
+# Don't copy these into image - saves space + security
+node_modules
+.env
+.git
+npm-debug.log
+dist
+*.test.js
