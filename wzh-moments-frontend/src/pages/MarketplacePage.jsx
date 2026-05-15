@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { Search, ShoppingBag, AlertTriangle, Plus } from 'lucide-react';
 import PublicLayout from '../components/layout/PublicLayout';
 import RequestCard from '../components/features/requests/RequestCard';
 import SubmitProposalModal from '../components/features/requests/SubmitProposalModal';
+import CreateRequestModal from '../components/features/requests/CreateRequestModal';
+import LoginPromptModal from '../components/common/LoginPromptModal';
 import Loading from '../components/common/Loading';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -12,12 +14,14 @@ import StarRating from '../components/features/reviews/StarRating';
 import toast from 'react-hot-toast';
 
 export default function MarketplacePage() {
-  const { user } = useAuth();
-  const [requests, setRequests]     = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-  const [filters, setFilters]       = useState({ search: '', category: '', minBudget: '', maxBudget: '', page: 1 });
+  const { user, isAuthenticated } = useAuth();
+  const [requests, setRequests]       = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [pagination, setPagination]   = useState({ page: 1, totalPages: 1, total: 0 });
+  const [filters, setFilters]         = useState({ search: '', category: '', minBudget: '', maxBudget: '', page: 1 });
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const isVendor   = user?.role === 'vendor';
   const isVerified = user?.isVerified;
@@ -54,9 +58,24 @@ export default function MarketplacePage() {
           <div>
             <p className="text-purple-200 text-sm font-medium mb-1">Service Marketplace</p>
             <h1 className="text-4xl font-black mb-2">Find Opportunities</h1>
-            <p className="text-primary-100 max-w-md">
+            <p className="text-primary-100 max-w-md mb-4">
               Browse service requests from users and send your best proposal to win the job.
             </p>
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  setShowLoginPrompt(true);
+                  return;
+                }
+                setShowCreateModal(true);
+              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5
+                bg-white text-purple-700 font-bold rounded-xl
+                hover:bg-purple-50 transition-colors shadow-md text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Post a Request
+            </button>
           </div>
           <div className="text-center">
             <p className="text-3xl font-black">{pagination.total}</p>
@@ -192,6 +211,20 @@ export default function MarketplacePage() {
           request={selectedRequest}
           onClose={() => setSelectedRequest(null)}
           onSuccess={fetchRequests}
+        />
+      )}
+
+      {showCreateModal && (
+        <CreateRequestModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => { setShowCreateModal(false); fetchRequests(); }}
+        />
+      )}
+
+      {showLoginPrompt && (
+        <LoginPromptModal
+          action="request"
+          onClose={() => setShowLoginPrompt(false)}
         />
       )}
     </PublicLayout>
