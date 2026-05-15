@@ -20,6 +20,7 @@ import BidSubmissionModal from '../components/features/events/BidSubmissionModal
 import EventBidsModal from '../components/features/events/EventBidsModal';
 import PaymentModal from '../components/features/events/PaymentModal';
 import ChatWindow from '../components/features/chat/ChatWindow';
+import LoginPromptModal from '../components/common/LoginPromptModal';
 import { formatDate, formatCurrency, getStatusColor, calculateCompletion } from '../utils/helpers';
 
 // Compare MongoDB _id values safely (could be string or ObjectId)
@@ -46,6 +47,8 @@ export default function EventDetailPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [tickets, setTickets] = useState(1);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginAction, setLoginAction] = useState('default');
 
   // Apply realtime progress updates
   useEffect(() => {
@@ -504,7 +507,8 @@ export default function EventDetailPage() {
                   <button
                     onClick={() => {
                       if (!isAuthenticated) {
-                        toast.error('Please sign in to book this event');
+                        setLoginAction('book');
+                        setShowLoginPrompt(true);
                         return;
                       }
                       setTickets(1);
@@ -532,10 +536,17 @@ export default function EventDetailPage() {
                   </p>
                 )}
 
-                {/* Chat button — authenticated non-organizers only */}
-                {isAuthenticated && !isEventOrganizer() && (
+                {/* Chat button — all non-organizers (login prompt for guests) */}
+                {!isEventOrganizer() && (
                   <button
-                    onClick={() => setShowChat(true)}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setLoginAction('chat');
+                        setShowLoginPrompt(true);
+                        return;
+                      }
+                      setShowChat(true);
+                    }}
                     className="w-full flex items-center justify-center gap-2 py-3 mt-3 border-2 border-primary-500 text-primary-600 font-semibold rounded-2xl hover:bg-primary-50 transition-colors"
                   >
                     <MessageCircle className="h-5 w-5" />
@@ -711,6 +722,14 @@ export default function EventDetailPage() {
             toast.success('🎉 Booking confirmed!');
             refetch();
           }}
+        />
+      )}
+
+      {/* Login prompt modal */}
+      {showLoginPrompt && (
+        <LoginPromptModal
+          action={loginAction}
+          onClose={() => setShowLoginPrompt(false)}
         />
       )}
 

@@ -14,6 +14,8 @@ import OrganizerDashboard from './pages/OrganizerDashboard';
 import VendorDashboard from './pages/VendorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import MarketplacePage from './pages/MarketplacePage';
+import AboutPage from './pages/AboutPage';
+import HowItWorksPage from './pages/HowItWorksPage';
 import NotFoundPage from './pages/NotFoundPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
@@ -32,14 +34,9 @@ export default function App() {
             <Route path="/login"      element={<LoginPage />} />
             <Route path="/register"      element={<RegisterPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route
-              path="/marketplace"
-              element={
-                <ProtectedRoute allowedRoles={['user', 'organizer', 'vendor', 'admin']}>
-                  <MarketplacePage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
 
             {/* User — all authenticated roles */}
             <Route

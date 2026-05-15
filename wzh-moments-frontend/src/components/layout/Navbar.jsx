@@ -26,8 +26,8 @@ const ROLE_BADGE = {
 
 const NAV_LINKS = [
   { label: 'Events',       path: '/events' },
-  { label: 'How It Works', path: '/#how-it-works' },
-  { label: 'About',        path: '/#about' },
+  { label: 'How It Works', path: '/how-it-works' },
+  { label: 'About',        path: '/about' },
 ];
 
 export default function Navbar() {
