@@ -141,11 +141,15 @@ export const sendMessage = async (req, res, next) => {
       { new: true, upsert: true }
     );
 
-    // Broadcast to everyone in the chat room
-    getIO().to(`chat-${eventId}`).emit('message:new', {
-      message: message.toObject(),
-      eventId,
-    });
+    // Broadcast to everyone in the chat room (non-fatal if socket not ready)
+    try {
+      getIO().to(`chat-${eventId}`).emit('message:new', {
+        message: message.toObject(),
+        eventId,
+      });
+    } catch (socketErr) {
+      console.error('Socket emit failed (non-fatal):', socketErr.message);
+    }
 
     const organizerId = event.organizerId?.toString();
     const senderId = req.user.id?.toString();

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Calendar, Ticket, DollarSign, Clock, MapPin, X,
-  ShoppingBag, Plus, Star,
+  ShoppingBag, Plus, Star, Settings,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
@@ -16,6 +16,7 @@ import RequestCard from '../components/features/requests/RequestCard';
 import CreateRequestModal from '../components/features/requests/CreateRequestModal';
 import ViewProposalsModal from '../components/features/requests/ViewProposalsModal';
 import AvatarUpload from '../components/common/AvatarUpload';
+import SettingsTab from '../components/common/SettingsTab';
 import SubmitReviewModal from '../components/features/reviews/SubmitReviewModal';
 import { formatDate, formatCurrency, getStatusColor } from '../utils/helpers';
 
@@ -24,7 +25,7 @@ const MENU = [
   { to: '/marketplace', label: 'Marketplace',  icon: ShoppingBag },
 ];
 
-const TABS = ['My Bookings', 'My Requests'];
+const TABS = ['My Bookings', 'My Requests', 'Settings'];
 
 export default function UserDashboard() {
   const { user, updateUser } = useAuth();
@@ -148,7 +149,12 @@ export default function UserDashboard() {
               tab === t ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700',
             ].join(' ')}
           >
-            {t}
+            {t === 'Settings' ? (
+              <span className="flex items-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" />
+                {t}
+              </span>
+            ) : t}
             {t === 'My Requests' && requests.length > 0 && (
               <span className="ml-1.5 bg-primary-100 text-primary-700 text-xs rounded-full px-1.5 py-0.5">
                 {requests.length}
@@ -291,6 +297,9 @@ export default function UserDashboard() {
           )}
         </div>
       )}
+
+      {/* ── Settings tab ── */}
+      {tab === 'Settings' && <SettingsTab />}
 
       {/* Modals */}
       {showCreate && (

@@ -9,7 +9,7 @@ const VerifyEmailPage = () => {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [verified, setVerified] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(600);
+  const [timeLeft, setTimeLeft] = useState(120);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,7 +82,7 @@ const VerifyEmailPage = () => {
       setResending(true);
       await api.post('/auth/resend-otp', { email });
       toast.success('New OTP sent to your email!');
-      setTimeLeft(600);
+      setTimeLeft(120);
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } catch (err) {
@@ -185,11 +185,11 @@ const VerifyEmailPage = () => {
           {/* Resend */}
           <button
             onClick={handleResend}
-            disabled={resending || timeLeft > 540}
+            disabled={resending || timeLeft > 0}
             className="w-full flex items-center justify-center gap-2 py-3 text-sm text-primary-600 hover:text-primary-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <RefreshCw className={`h-4 w-4 ${resending ? 'animate-spin' : ''}`} />
-            {resending ? 'Sending...' : timeLeft > 540 ? `Resend in ${timeLeft - 540}s` : 'Resend OTP'}
+            {resending ? 'Sending...' : 'Resend OTP'}
           </button>
 
           {/* Back */}

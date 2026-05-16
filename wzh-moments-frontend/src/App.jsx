@@ -18,6 +18,7 @@ import AboutPage from './pages/AboutPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import NotFoundPage from './pages/NotFoundPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
 
 export default function App() {
@@ -33,7 +34,8 @@ export default function App() {
             <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/login"      element={<LoginPage />} />
             <Route path="/register"      element={<RegisterPage />} />
-            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/verify-email"    element={<VerifyEmailPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />

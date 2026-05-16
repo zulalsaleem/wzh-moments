@@ -1,7 +1,10 @@
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
-import { sendWelcomeEmail, sendOTPEmail, sendResendOTPEmail } from '../services/emailService.js';
-import { generateOTP, generateOTPExpiry } from '../utils/generateOTP.js';
+import {
+  sendWelcomeEmail, sendOTPEmail, sendResendOTPEmail,
+  sendForgotPasswordEmail, sendPasswordResetSuccessEmail,
+} from '../services/emailService.js';
+import { generateOTP, generateOTPExpiry, isOTPExpired } from '../utils/generateOTP.js';
 
 /**
  * @desc    Register a new user
@@ -138,9 +141,14 @@ export const resendOTP = async (req, res, next) => {
     user.emailVerificationExpires = generateOTPExpiry();
     await user.save();
 
-    await sendResendOTPEmail(user.email, user.name, otp);
+    const result = await sendResendOTPEmail(user.email, user.name, otp);
+    console.log('Resend OTP result:', result);
 
-    res.json({ success: true, message: 'New OTP sent to your email!' });
+    res.json({
+      success: true,
+      message: 'New OTP sent to your email!',
+      ...(process.env.NODE_ENV === 'development' && { devOTP: otp }),
+    });
   } catch (err) {
     next(err);
   }
@@ -237,6 +245,150 @@ export const changePassword = async (req, res, next) => {
     const token = generateToken(user._id, user.role);
 
     res.status(200).json({ success: true, token });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @desc    Step 1 — Request a password reset OTP
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email address is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    // Don't reveal whether the email exists
+    if (!user) {
+      return res.json({
+        success: true,
+        message: 'If this email exists, a reset code has been sent.',
+      });
+    }
+
+    const otp = generateOTP();
+    const expiry = generateOTPExpiry();
+
+    user.passwordResetOTP = otp;
+    user.passwordResetExpires = expiry;
+    user.passwordResetVerified = false;
+    await user.save();
+
+    const emailResult = await sendForgotPasswordEmail(user.email, user.name, otp);
+    console.log('Forgot password email:', emailResult);
+
+    res.json({
+      success: true,
+      message: 'Password reset code sent to your email.',
+      emailSent: emailResult.success,
+      ...(process.env.NODE_ENV === 'development' && { devOTP: otp }),
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @desc    Step 2 — Verify the reset OTP
+ * @route   POST /api/auth/verify-reset-otp
+ * @access  Public
+ */
+export const verifyResetOTP = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, error: 'Email and OTP are required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() })
+      .select('+passwordResetOTP +passwordResetExpires +passwordResetVerified');
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    if (!user.passwordResetOTP) {
+      return res.status(400).json({
+        success: false,
+        error: 'No reset request found. Please request a new code.',
+      });
+    }
+
+    if (user.passwordResetOTP !== otp) {
+      return res.status(400).json({ success: false, error: 'Invalid code. Please check and try again.' });
+    }
+
+    if (isOTPExpired(user.passwordResetExpires)) {
+      return res.status(400).json({ success: false, error: 'Code has expired. Please request a new one.' });
+    }
+
+    user.passwordResetVerified = true;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Code verified! You can now set a new password.',
+      email: user.email,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @desc    Step 3 — Set the new password
+ * @route   POST /api/auth/reset-password
+ * @access  Public
+ */
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    if (!email || !newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, error: 'All fields are required' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, error: 'Passwords do not match' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() })
+      .select('+password +passwordResetOTP +passwordResetExpires +passwordResetVerified');
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    if (!user.passwordResetVerified) {
+      return res.status(400).json({ success: false, error: 'Please verify your reset code first' });
+    }
+
+    if (isOTPExpired(user.passwordResetExpires)) {
+      return res.status(400).json({ success: false, error: 'Reset session expired. Please start again.' });
+    }
+
+    user.password = newPassword;
+    user.passwordResetOTP = null;
+    user.passwordResetExpires = null;
+    user.passwordResetVerified = false;
+    await user.save();
+
+    sendPasswordResetSuccessEmail(user.email, user.name)
+      .catch(err => console.error('Reset success email failed:', err.message));
+
+    res.json({ success: true, message: 'Password reset successfully! You can now login.' });
   } catch (err) {
     next(err);
   }

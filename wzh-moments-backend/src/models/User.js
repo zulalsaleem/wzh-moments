@@ -68,6 +68,24 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    passwordResetOTP: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    passwordResetExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    passwordResetVerified: {
+      type: Boolean,
+      default: false,
+      select: false,
+    },
+
     profileImage: {
       type: String,
       default: null,

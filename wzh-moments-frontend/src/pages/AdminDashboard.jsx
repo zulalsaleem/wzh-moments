@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   Users, Calendar, CheckCircle2, BarChart3, LayoutDashboard,
   Clock, DollarSign, Gavel, ShieldCheck, XCircle, BadgeCheck,
-  ShoppingBag, Trash2, MapPin,
+  ShoppingBag, Trash2, MapPin, Settings,
 } from 'lucide-react';
+import SettingsTab from '../components/common/SettingsTab';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import endpoints from '../api/endpoints';
@@ -19,7 +20,7 @@ const MENU = [
   { to: '/admin', label: 'Overview', icon: LayoutDashboard },
 ];
 
-const TABS = ['Overview', 'Event Approvals', 'Users', 'User Requests'];
+const TABS = ['Overview', 'Event Approvals', 'Users', 'User Requests', 'Settings'];
 
 export default function AdminDashboard() {
   const [tab, setTab]               = useState('Overview');
@@ -124,7 +125,12 @@ export default function AdminDashboard() {
               tab === t ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700',
             ].join(' ')}
           >
-            {t}
+            {t === 'Settings' ? (
+              <span className="flex items-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" />
+                {t}
+              </span>
+            ) : t}
             {t === 'Event Approvals' && pendingBadge != null && (
               <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
                 {pendingBadge}
@@ -347,6 +353,9 @@ export default function AdminDashboard() {
           )}
         </div>
       )}
+
+      {/* ── Settings tab ── */}
+      {tab === 'Settings' && <SettingsTab />}
 
       {/* Reject event modal */}
       <Modal

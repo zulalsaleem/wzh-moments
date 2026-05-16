@@ -293,7 +293,7 @@ const templates = {
 
       <div class="highlight-box">
         <h3>⏰ Important</h3>
-        <p>• This OTP expires in <strong>10 minutes</strong></p>
+        <p>• This OTP expires in <strong>2 minutes</strong></p>
         <p>• Do not share this OTP with anyone</p>
         <p>• If you did not register, ignore this email</p>
       </div>
@@ -321,7 +321,7 @@ const templates = {
       </div>
 
       <div class="highlight-box">
-        <h3>⏰ Expires in 10 minutes</h3>
+        <h3>⏰ Expires in 2 minutes</h3>
         <p>Use this code immediately to verify your account.</p>
       </div>
     `, 'New Verification Code'),
@@ -345,6 +345,56 @@ const templates = {
 
       <a href="${FRONTEND_URL}/events" class="btn">🔍 Browse Events</a>
     `, 'Booking Cancelled'),
+  }),
+
+  forgotPassword: (name, otp) => ({
+    subject: '🔑 Reset Your Password - WZH Moments',
+    html: baseTemplate(`
+      <div class="warning-badge">🔑 Password Reset Request</div>
+      <h2>Hi ${name}!</h2>
+      <p>We received a request to reset your WZH Moments account password.
+      Use the code below:</p>
+
+      <div style="text-align:center; margin: 30px 0;">
+        <div style="display:inline-block;
+          background: linear-gradient(135deg, #0ea5e9, #a855f7);
+          border-radius: 16px; padding: 20px 40px;">
+          <p style="color:rgba(255,255,255,0.8); font-size:14px; margin-bottom:8px;">
+            Password Reset Code
+          </p>
+          <p style="color:white; font-size:48px;
+            font-weight:900; letter-spacing:12px; margin:0;">
+            ${otp}
+          </p>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <h3>⏰ Important</h3>
+        <p>• Code expires in <strong>2 minutes</strong></p>
+        <p>• Do not share this code with anyone</p>
+        <p>• If you did not request this, ignore this email</p>
+        <p>• Your password will NOT change unless you complete the reset</p>
+      </div>
+    `, 'Reset Your Password'),
+  }),
+
+  passwordResetSuccess: (name) => ({
+    subject: '✅ Password Reset Successful - WZH Moments',
+    html: baseTemplate(`
+      <div class="success-badge">✅ Password Reset Successful</div>
+      <h2>Hi ${name}!</h2>
+      <p>Your WZH Moments password has been successfully reset.
+      You can now login with your new password.</p>
+
+      <div class="highlight-box">
+        <h3>⚠️ Didn't do this?</h3>
+        <p>If you did not reset your password, contact support immediately
+        as your account may be compromised.</p>
+      </div>
+
+      <a href="${FRONTEND_URL}/login" class="btn">Login Now →</a>
+    `, 'Password Reset Successful'),
   }),
 };
 
@@ -416,6 +466,12 @@ export const sendOTPEmail = (to, name, otp) =>
 
 export const sendResendOTPEmail = (to, name, otp) =>
   sendEmail(to, 'resendOTP', [name, otp]);
+
+export const sendForgotPasswordEmail = (to, name, otp) =>
+  sendEmail(to, 'forgotPassword', [name, otp]);
+
+export const sendPasswordResetSuccessEmail = (to, name) =>
+  sendEmail(to, 'passwordResetSuccess', [name]);
 
 export default {
   sendEmail,

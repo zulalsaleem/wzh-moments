@@ -70,20 +70,6 @@ export default function EventDetailPage() {
     applyAttendeeUpdate(attendeeUpdate);
   }, [attendeeUpdate, applyAttendeeUpdate]);
 
-  useEffect(() => {
-    if (!event || !user) return;
-    const userId = (user.id || user._id)?.toString();
-    const org = event.organizer || event.organizerId;
-    const organizerId = (typeof org === 'object'
-      ? (org?._id || org?.id)
-      : org
-    )?.toString();
-    console.log('=== ORGANIZER CHECK ===');
-    console.log('User ID:', userId);
-    console.log('Organizer ID:', organizerId);
-    console.log('Match:', userId === organizerId);
-    console.log('======================');
-  }, [event, user]);
 
   const handleBook = () => {
     if (!isAuthenticated) {
@@ -147,39 +133,22 @@ export default function EventDetailPage() {
   const canBook = (event.status === 'approved' || event.status === 'live') && availableSeats > 0;
 
   // Returns true if the logged-in user is this event's organizer.
-  // Handles every shape the API may send:
-  //   event.organizer = { _id: ObjectId|string }  (toObject alias added by backend)
-  //   event.organizerId = { _id: ObjectId|string } (toObject, _id present)
-  //   event.organizerId = { id: string }           (toJSON transform, _id renamed)
-  //   event.organizerId = "507f..."                (plain string)
+  // Checks every shape the API may send for the organizer ID.
   const isEventOrganizer = () => {
     if (!user || !event) return false;
-    const userId = (user.id || user._id)?.toString();
+    const userId = (user?.id || user?._id)?.toString();
     if (!userId) return false;
 
-    // Walk through every possible location for the organizer ID
-    const candidates = [
-      event.organizer?._id,
-      event.organizer?.id,
-      event.organizer,
-      event.organizerId?._id,
-      event.organizerId?.id,
-      event.organizerId,
-    ];
+    const possibleOrgIds = [
+      event?.organizer?._id,
+      event?.organizer?.id,
+      event?.organizer,
+      event?.organizerId?._id,
+      event?.organizerId?.id,
+      event?.organizerId,
+    ].filter(Boolean);
 
-    for (const c of candidates) {
-      if (!c || typeof c === 'object') continue; // skip nulls and un-stringified objects
-      if (c.toString() === userId) return true;
-    }
-
-    // Last resort: if the organizer field is a plain object, stringify its _id/id
-    const org = event.organizer || event.organizerId;
-    if (org && typeof org === 'object') {
-      const oid = (org._id || org.id)?.toString();
-      if (oid) return oid === userId;
-    }
-
-    return false;
+    return possibleOrgIds.some((id) => id?.toString() === userId);
   };
 
   const openRequirements = event.requirements?.filter((r) => r.status === 'open') ?? [];

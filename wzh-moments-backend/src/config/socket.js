@@ -15,8 +15,13 @@ let io = null;
 export const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      //origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-      origin: [['http://localhost:5173', 'http://127.0.0.1:5173']],  // Allow all origins for testing; replace with specific URL(s) in production
+      origin: [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'https://wzhmoments.online',
+        'https://www.wzhmoments.online',
+        process.env.FRONTEND_URL,
+      ].filter(Boolean),
       credentials: true,
       methods: ['GET', 'POST'],
     },
@@ -157,12 +162,17 @@ export const initSocket = (httpServer) => {
 
 /**
  * Returns the active Socket.IO instance.
- * Must be called after initSocket().
+ * If called before initSocket(), returns a no-op fallback so callers
+ * never need to guard against null — a warn is logged instead of throwing.
  *
  * @returns {import('socket.io').Server}
- * @throws {Error} If Socket.IO has not been initialised yet
  */
 export const getIO = () => {
-  if (!io) throw new Error('Socket.IO not initialized. Call initSocket() first.');
+  if (!io) {
+    console.warn('Socket.IO not initialized yet — emit is a no-op');
+    return {
+      to: () => ({ emit: () => {} }),
+    };
+  }
   return io;
 };

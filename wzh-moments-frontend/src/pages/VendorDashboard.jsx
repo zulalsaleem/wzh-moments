@@ -4,8 +4,9 @@ import {
   Briefcase, CheckCircle, XCircle, Clock,
   DollarSign, AlertTriangle, Search,
   ShoppingBag, Send, Trash2, ExternalLink,
-  RefreshCw, LayoutDashboard, Calendar, MapPin,
+  RefreshCw, LayoutDashboard, Calendar, MapPin, Settings,
 } from 'lucide-react';
+import SettingsTab from '../components/common/SettingsTab';
 import toast from 'react-hot-toast';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import StatCard from '../components/common/StatCard';
@@ -140,6 +141,7 @@ export default function VendorDashboard() {
     { id: 'bids',        label: 'Event Bids',      icon: Briefcase,   count: bids.length },
     { id: 'marketplace', label: 'Browse Requests', icon: ShoppingBag, count: null },
     { id: 'proposals',   label: 'My Proposals',    icon: Send,        count: myProposals.length },
+    { id: 'settings',    label: 'Settings',        icon: Settings,    count: null },
   ];
 
   return (
@@ -541,6 +543,9 @@ export default function VendorDashboard() {
           )}
         </div>
       )}
+
+      {/* ── TAB: SETTINGS ────────────────────────────────────── */}
+      {activeTab === 'settings' && <SettingsTab />}
 
       {/* Submit Proposal Modal */}
       {selectedRequest && (
